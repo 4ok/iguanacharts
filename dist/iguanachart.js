@@ -1129,7 +1129,7 @@ function intervalNames(interval) {
         case "I15":
             return _t('2075', "15 минутный");
         case "H1":
-            return _t('', "Часовой");
+            return _t('12819', "Часовой");
         case "D1":
             return _t('2077', "Дневной");
         case "D7":
@@ -1271,6 +1271,17 @@ function intervalShortNames(interval) {
     w.iChart.monthNames = [_t('3280', 'Январь'), _t('3281', 'Февраль'), _t('3282', 'Март'), _t('3283', 'Апрель'), _t('3284', 'Май'), _t('3285', 'Июнь'), _t('3286', 'Июль'), _t('3287', 'Август'), _t('3288', 'Сентябрь'), _t('3289', 'Октябрь'), _t('3290', 'Ноябрь'), _t('3291', 'Декабрь')];
     w.iChart.monthRNames = [_t('1889', "января"), _t('1890', "февраля"), _t('1891', "марта"), _t('1892', "апреля"), _t('1893', "мая"), _t('1894', "июня"), _t('1895', "июля"), _t('1896', "августа"), _t('1897', "сентября"), _t('1898', "октября"), _t('1899', "ноября"), _t('1900', "декабря")];
     w.iChart.monthShortNames = [_t('3502', 'янв'), _t('3503', 'фев'), _t('3504', 'мар'), _t('3505', 'апр'), _t('4939', "май"), _t('3507', 'июн'), _t('3508', 'июл'), _t('3509', 'авг'), _t('3510', 'сен'), _t('3511', 'окт'), _t('3512', 'ноя'), _t('3513', 'дек')];
+
+    w.iChart.candleModes = {
+      standard: {
+        text: _t('18372', 'Стандартный'),
+        value: 'standard',
+      },
+      theoretical: {
+        text: _t('112565', 'Теоретический'),
+        value: 'theoretical',
+      }
+    };
 
     w.iChart.declineNoun = function (n, singular, dual, plural)
     {
@@ -4259,6 +4270,7 @@ iChart.indicators = {
         this.prevY = null;
         this.selected = null;
         this.unfinished = null;
+        this.isRenderAfterInitCanvas = false;
 
         $(chart.container).off('mousedown.overlay').unbind('mouseup.overlay').unbind('mousemove.overlay');
         $(chart.container).on('mousedown.overlay', $.proxy(this.onMouseDown, this)).
@@ -4871,9 +4883,9 @@ iChart.indicators = {
 
         if (!context)
         {
-            if(!this.context) {
-                console.log("ERROR: No context for render");
-                return 0;
+            if (!this.context) {
+                this.isRenderAfterInitCanvas = true;
+                return;
             }
             context = this.context;
             var canvasSize = getElementSize(context.canvas);
@@ -5155,6 +5167,11 @@ iChart.indicators = {
         {
             this.context = iChart.getContext(this.canvas);
             this.offset = this.chart._containerSize.offset;
+
+            if (this.isRenderAfterInitCanvas) {
+                this.isRenderAfterInitCanvas = false;
+                this.render();
+            }
         }
     };
 })();
@@ -7363,7 +7380,7 @@ function getTradeLabelText(trade, price) {
 
             $this.qtip({
                 style: {
-                    classes: 'qtip-light'
+                    classes: 'qtip-light uk-tooltip-custom'
                 },
                 position: {
                     at: 'center right',
@@ -7774,7 +7791,7 @@ function getTradeLabelText(trade, price) {
 
             $this.qtip({
                 style: {
-                    classes: 'qtip-light'
+                    classes: 'qtip-light uk-tooltip-custom'
                 },
                 position: {
                     at: 'center right',
@@ -18266,13 +18283,13 @@ $.templates("iChart_mainTmpl", '' +
                 '<div class="uk-modal-header">' + _t('3101', "Индикаторы") + '</div>' +
                 '<div class="js-chartTADialogContainer"></div>' +
                 '<div class="uk-modal-footer">' +
-                    '<div class="uk-flex uk-flex-middle uk-flex-space-between tm-pad-large">' +
-                        '<div class="js-indicator-add md-btn md-btn-small md-btn-success">' +
+                    '<div class="uk-flex uk-flex-middle uk-flex-space-between">' +
+                        '<div class="js-indicator-add uk-button uk-button-small uk-button-success">' +
                             _t('15460', 'Добавить индикатор') +
                         '</div>' +
-                    '<div class="md-btn-group"><a class="md-btn md-btn-small md-btn-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
-                        '<a class="md-btn md-btn-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
-                        '<a class="md-btn md-btn-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
+                    '<div class="uk-button-group"><a class="uk-button uk-button-small uk-button-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
+                        '<a class="uk-button uk-button-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
+                        '<a class="uk-button uk-button-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
@@ -18552,9 +18569,12 @@ $.templates("indicatorsDropdownTmpl",
 $.templates("indicatorDialogTmpl", '' +
     '<div class="iChartDialog" style="display: none; width: 300px;">' +
         '<div> {{:name}} </div>' +
-        '<div class="js-iChartTools-indicators-params">' +
+        '<div class="js-iChartTools-indicators-params uk-form">' +
             '{{for parameters}}' +
-                '<div>{{:Name}} <input type="text" name="{{:Code}}" value="{{:Value}}" /></div>' +
+                '<div>' +
+                    '{{:Name}}' +
+                    '<input type="text" name="{{:Code}}" value="{{:Value}}" />' +
+                '</div>' +
             '{{/for}}' +
         '</div>' +
         '<div class="js-iChartTools-indicators-colorContainer"></div>' +
@@ -18582,7 +18602,7 @@ $.templates("captureDialogTmpl", '' +
 
 $.templates("themeConfigSelectorTmpl", '' +
     '<div class="uk-button-dropdown" data-uk-dropdown="{mode:\'click\'}" aria-haspopup="true" aria-expanded="false">' +
-        '<button class="uk-button uk-button-success">' + _t('13663', 'Темы') + ' <i class="uk-icon-caret-down"></i></button>' +
+        '<button class="uk-button uk-button-small uk-button-success">' + _t('13663', 'Темы') + ' <i class="uk-icon-caret-down uk-margin-small-left"></i></button>' +
         '<div class="uk-dropdown uk-dropdown-up uk-dropdown-small uk-dropdown-scrollable">' +
             '<ul class="uk-nav uk-nav-dropdown">' +
                 '{{for themes}}' +
@@ -18603,7 +18623,7 @@ $.templates("themeConfigSelectorTmpl", '' +
 $.templates("themeConfigTmpl", '' +
     '<div class="js-themeConfig" style="display: none">' +
         '<div class="js-themeConfigOptions"></div>' +
-        '<div class="uk-grid uk-grid-small">' +
+        '<div class="uk-grid uk-grid-small uk-margin-top">' +
             '<div class="uk-width-1-1">' +
                 '<div class="js-themeConfigSelector"></div>' +
             '</div>' +
@@ -18613,8 +18633,8 @@ $.templates("themeConfigTmpl", '' +
             '<div class="uk-width-7-10 js-themeAdditionButtons">' +
             '</div>' +
             '<div class="uk-width-3-10 uk-text-right">' +
-                '<button class="uk-button js-chartOptions" data-value="cancel">' + _t('1403', 'Отмена') + '</button> ' +
-                '<button class="uk-button  uk-button-primary js-chartOptions" data-value="ok">' + _t('3920', "OK") + '</button>' +
+                '<button class="uk-button uk-button-fit js-chartOptions" data-value="cancel">' + _t('1403', 'Отмена') + '</button> ' +
+                '<button class="uk-button uk-button-fit uk-button-primary js-chartOptions" data-value="ok">' + _t('3920', "OK") + '</button>' +
             '</div>' +
         '</div>' +
     '</div>'
@@ -19009,6 +19029,10 @@ var iChartDataSource = {
             'demo': params.demo
         };
 
+        if (params.isTheoreticalData) {
+          cachedParams.isTheoreticalData = params.isTheoreticalData;
+        }
+
         //Спецальная метка для nginx по которой он будет пытаться взять hloc из файла а не с сервера
         cachedParams['hash'] = cachedParams.id.toString()
             + (cachedParams.date_from ? Date.parse(cachedParams.date_from).toString() : '')
@@ -19103,8 +19127,11 @@ var iChartDataSource = {
                         _chart.viewData.chart._dataSettings.date_from,
                         _chart.viewData.chart._dataSettings.date_to);
 
+                    const parsedDateFrom = iChart.parseDateTime(_chart.viewData.chart._dataSettings.date_from);
+                    const parsedDateTo = iChart.parseDateTime(_chart.viewData.chart._dataSettings.date_to);
+
                     _chart.checkPeriodInterval(_chart.viewData.chart._dataSettings.interval);
-                    _chart.checkDateInterval(_chart.viewData.chart._dataSettings.date_from, _chart.viewData.chart._dataSettings.date_to);
+                    _chart.checkDateInterval(parsedDateFrom, parsedDateTo);
                     _chart.updateUnlocked = true
                     _chart.fixViewport();
                     _chart.wrapper.trigger("iguanaChartEvents", ["noDataInRequestResponse"]);
@@ -19186,7 +19213,7 @@ IguanaChart = function (options) {
 
     this.wrapper = options.wrapper;
 
-    this.lib_path = options.lib_path || "/iguanachart/";
+    this.lib_path = options.lib_path || "/dist/iguanacharts/";
 
     this.toQueryString = function (params)
     {
@@ -19581,6 +19608,11 @@ IguanaChart = function (options) {
         params["compareIds"] = this.dataSource.dataSettings.compareIds;
         params["compareTickets"] = this.dataSource.dataSettings.compareTickets;
         params["compareStocks"] = this.dataSource.dataSettings.compareStocks;
+
+        if (this.dataSource.dataSettings.candleMode) {
+          params.isTheoreticalData = this.dataSource.dataSettings.candleMode.value === "theoretical";
+        }
+
         //var p = $('[name=form_info_settings]').serializeArray();
         //for (var i = 0; i < p.length; i++) {
         //    params[p[i].name] = p[i].value;
@@ -19751,14 +19783,14 @@ IguanaChart = function (options) {
             }
 
             var indForm =
-            '<div style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)" class="js-chart-indiacator-block tm-pad-large js-chartTADialog-i' + id + '-settings" id="iChart-i' + id + '-settings">' +
-                '<div class="uk-panel">' +
+            '<div class="js-chart-indiacator-block js-chartTADialog-i' + id + '-settings" id="iChart-i' + id + '-settings">' +
+                '<div class="uk-panel uk-margin-top">' +
                     '<div class="uk-flex uk-flex-middle uk-flex-space-between uk-margin-small-bottom">' +
                         '<div class="uk-h4">' + _t('12834','Индикатор') + ' ' + (id+1) + '</div>' +
-                        '<div class="js-indicator-remove uk-icon-close uk-panel-hover uk-badge uk-button uk-button-mini"></div>' +
+                        '<div class="js-indicator-remove uk-button uk-button-danger uk-button-small uk-button-fit"><i class="uk-icon-close"></i></div>' +
                     '</div>' +
                     '<div class="uk-form">' +
-                        '<select name="i' + id + '" class="indicatorsSelect">' +
+                        '<select name="i' + id + '" class="indicatorsSelect uk-width-1-1">' +
                         indicatorOptions +
                         '</select>' +
                     '</div>' +
@@ -19779,7 +19811,7 @@ IguanaChart = function (options) {
         for (var j = 0; j < indicatorParameters.length; ++j) {
             var parameterKey = "i" + id + "_" + indicatorParameters[j].Code;
             var $container = $("<div/>", { "class":"iChart-indicator-parameters uk-form", "text":indicatorParameters[j].Name + ": " }).appendTo($root);
-            $("<input/>", { "name":parameterKey, "type":"text", "value":indicatorParameters[j].Value }).css({ "width":"50px" }).appendTo($container);
+            $("<input/>", { "name":parameterKey, "type":"text", "value":indicatorParameters[j].Value, class: "uk-form-small" }).css({ "width":"50px" }).appendTo($container);
         }
 
         var $colorContainer = $("<div/>", {"class":"iChart-indicator-colors", "id":"iChart-indicator-colors"}).appendTo($root);
@@ -19988,20 +20020,20 @@ IguanaChart = function (options) {
 
     this.iconsLoad = function () {
         $(["/i/admin/add.png",
-            "/iguanachart/images/buy.png",
-            "/iguanachart/images/down.png",
-            "/iguanachart/images/icon-exclamation.png",
-            "/iguanachart/images/icon-left.png",
-            "/iguanachart/images/icon-leftDown.png",
-            "/iguanachart/images/icon-leftUp.png",
-            "/iguanachart/images/icon-question.png",
-            "/iguanachart/images/icon-right.png",
-            "/iguanachart/images/icon-rightDown.png",
-            "/iguanachart/images/icon-rightUp.png",
-            "/iguanachart/images/icon-sell.png",
-            "/iguanachart/images/icon-smileDown.png",
-            "/iguanachart/images/icon-smileUp.png",
-            "/iguanachart/images/icon-up.png",
+            this.lib_path + "/images/buy.png",
+            this.lib_path + "/images/down.png",
+            this.lib_path + "/images/icon-exclamation.png",
+            this.lib_path + "/images/icon-left.png",
+            this.lib_path + "/images/icon-leftDown.png",
+            this.lib_path + "/images/icon-leftUp.png",
+            this.lib_path + "/images/icon-question.png",
+            this.lib_path + "/images/icon-right.png",
+            this.lib_path + "/images/icon-rightDown.png",
+            this.lib_path + "/images/icon-rightUp.png",
+            this.lib_path + "/images/icon-sell.png",
+            this.lib_path + "/images/icon-smileDown.png",
+            this.lib_path + "/images/icon-smileUp.png",
+            this.lib_path + "/images/icon-up.png",
             "/i/logo_tradernet_min.png"]).preload();
     };
     this.drawLables = function (legend, context, x, y) {
@@ -20464,6 +20496,24 @@ IguanaChart = function (options) {
             this.viewData.chart.render({ "forceRecalc": true, "resetViewport": false, "testForIntervalChange": false });
         }
     };
+
+    this.getPeriodByInterval = function(interval) {
+        switch (interval) {
+            case "I1":
+                return "D1";
+            case "I5":
+                return "D3";
+            case "I15":
+                return "D7";
+            case "H1":
+                return "D14";
+            case "D1":
+                return "M6";
+            case "D7":
+                return "Y1";
+        }
+    }
+
     this.setDatePeriod = function (interval, start, end){
         this.dataSource.dataSettings.interval = interval;
         this.dataSource.dataSettings.period = period;
@@ -20472,31 +20522,20 @@ IguanaChart = function (options) {
         this.dataSource.dataSettings.date_to = end;
         this.dataSource.dataSettings.timeframe = iChart.getChartTimeframe(interval);
 
-        var period = "M1";
-        switch (interval) {
-            case"I1":
-                period = "D1";
-                break;
-            case"I5":
-                period = "D3";
-                break;
-            case"I15":
-                period = "D7";
-                break;
-            case"H1":
-                period = "D14";
-                break;
-            case"D1":
-                period = "M6";
-                break;
-            case"D7":
-                period = "Y1";
-                break
-        }
+        var period = interval
+            ? this.getPeriodByInterval(interval)
+            : "M1";
 
         this.checkPeriod(period);
     };
-    this.checkDateInterval = function (new_date_from, new_date_to) {
+
+    this.applyChartOptions = function (params) {
+        this.dataSource.dataSettings.candleMode = params.candleMode || iChart.candleModes.standard;
+
+        this.dataSource.dataSettings.customIntervals = params.customIntervals;
+    }
+
+    this.checkDateInterval = function (new_date_from, new_date_to, forceUpdates = false) {
 
         var date_from = iChart.formatDateTime(new Date(new_date_from), "dd.MM.yyyy HH:mm");
         var date_to = iChart.formatDateTime(new Date(new_date_to), "dd.MM.yyyy HH:mm");
@@ -20516,14 +20555,8 @@ IguanaChart = function (options) {
         var interval = (new_date_to - new_date_from) / 86400000;
         var fromNow = (new Date().getTime() - new_date_from) / 86400000;
 
-        var Allow1 = new Array;
-
-        Allow1.push("I1");
-        Allow1.push("I5");
-        Allow1.push("I15");
-        Allow1.push("H1");
-        Allow1.push("D1");
-        Allow1.push("D7"); //TODO: нету данных в mChartAnalysisJSON, нужна доработка сервера
+        // //TODO: D7 нету данных в mChartAnalysisJSON, нужна доработка сервера
+        var Allow1 = ["I1", "I5", "I15", "H1", "D1", "D7"];
 
         var restriction = {};
 
@@ -20538,18 +20571,55 @@ IguanaChart = function (options) {
         } else if (fromNow < 3 && fromNow >= 0) { // от дня
         }
 
-        var dataSource = new Array();
+        if (this.dataSource.dataSettings.customIntervals) {
+            Allow1 = this.dataSource.dataSettings.customIntervals;
+            restriction = Allow1.reduce((acc, interval) => {
+                acc[interval] = this.getPeriodByInterval(interval);
 
-        for (var i = 0; i < Allow1.length; i++) {
-            var text = intervalNames(Allow1[i]) + ((typeof restriction[Allow1[i]] != "undefined") ? (" > " + intervalShortNames(restriction[Allow1[i]])) : "");
-            dataSource.push({ text: text, value: Allow1[i], restriction: restriction[Allow1[i]] });
+                return acc;
+            }, {});
         }
 
+        const dataSource = [];
+
+        Allow1.forEach((interval) => {
+            let intervalName = intervalNames(interval);
+            const intervalShortName = intervalShortNames(restriction[interval]);
+
+            if (intervalShortName) {
+                intervalName = `${intervalName} > ${intervalShortName}`;
+            }
+
+            dataSource.push({
+                text: intervalName,
+                value: interval,
+                restriction: restriction[interval],
+            });
+        });
+
+        // set first interval for selection if it's not in set
+        if (!Allow1.includes(interval_tmp)) {
+          interval_tmp = Allow1[0];
+        }
 
         this.dataSource.dataSettings.interval = interval_tmp;
 
-        var result = {restriction: restriction, dataSource: dataSource, value: interval_tmp, text: intervalNames(interval_tmp)};
-        if(JSON.stringify(this.dataSource.dataSettings.intervalRestriction) != JSON.stringify(restriction) && interval_tmp == this.dataSource.dataSettings.interval) {
+        var result = {
+          restriction: restriction,
+          dataSource: dataSource,
+          value: interval_tmp,
+          text: intervalNames(interval_tmp),
+          selectedCandleMode: this.dataSource.dataSettings.candleMode,
+          candleModes: iChart.candleModes,
+        };
+
+        if (
+            forceUpdates ||
+            (
+                JSON.stringify(this.dataSource.dataSettings.intervalRestriction) !== JSON.stringify(restriction)
+                && interval_tmp === this.dataSource.dataSettings.interval
+            )
+        ) {
             this.dataSource.dataSettings.intervalRestriction = restriction;
             $(this.container).trigger('iguanaChartEvents', ['intervalRestriction', result]);
         }
@@ -20784,7 +20854,7 @@ IguanaChart = function (options) {
     this.initIndicatorWidthMenu = function (element, menu) {
         $(element).qtip({
             style: {
-                classes: 'qtip-light'
+                classes: 'qtip-light uk-tooltip-custom'
             },
             position: {
                 at: 'left bottom',
@@ -21097,6 +21167,10 @@ IguanaChart = function (options) {
         e.stopPropagation();
         e.stopImmediatePropagation();
         return false;
+    });
+
+    $(_this.wrapper).on('iguanaChangeChartType', function(event, name, data) {
+      console.log({ event, name, data });
     });
 
     //$(window).on("hashchange", this.window_onHashChange);
@@ -21461,7 +21535,7 @@ IguanaChart = function (options) {
 
                 $this.qtip({
                     style: {
-                        classes: 'qtip-light'
+                        classes: 'qtip-light uk-tooltip-custom'
                     },
                     position: {
                         at: 'center right',
@@ -21533,7 +21607,7 @@ IguanaChart = function (options) {
 
                 $this.qtip({
                     style: {
-                        classes: 'qtip-light'
+                        classes: 'qtip-light uk-tooltip-custom'
                     },
                     position: {
                         at: 'center right',
@@ -22155,13 +22229,13 @@ IguanaChart = function (options) {
                                 '<div class="uk-modal-header">' + _t('3101', "Индикаторы") + '</div>' +
                                 '<div class="js-chartTADialogContainer"></div>' +
                                 '<div class="uk-modal-footer">' +
-                                '<div class="uk-flex uk-flex-middle uk-flex-space-between tm-pad-large">' +
-                                    '<div class="js-indicator-add md-btn md-btn-small md-btn-success">' +
+                                '<div class="uk-flex uk-flex-middle uk-flex-space-between">' +
+                                    '<div class="js-indicator-add uk-button uk-button-small uk-button-success">' +
                                         _t('15460', 'Добавить индикатор') +
                                     '</div>' +
-                                '<div class="md-btn-group"><a class="md-btn md-btn-small md-btn-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
-                                '<a class="md-btn md-btn-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
-                                '<a class="md-btn md-btn-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
+                                '<div class="uk-button-group"><a class="uk-button uk-button-small uk-button-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
+                                '<a class="uk-button uk-button-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
+                                '<a class="uk-button uk-button-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
                             '</div>' +
                         '</div>' +
                     '</div>' +

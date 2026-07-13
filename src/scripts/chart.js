@@ -10,7 +10,7 @@
 
     this.wrapper = options.wrapper;
 
-    this.lib_path = options.lib_path || "/iguanachart/";
+    this.lib_path = options.lib_path || "/dist/iguanacharts/";
 
     this.toQueryString = function (params)
     {
@@ -405,6 +405,11 @@
         params["compareIds"] = this.dataSource.dataSettings.compareIds;
         params["compareTickets"] = this.dataSource.dataSettings.compareTickets;
         params["compareStocks"] = this.dataSource.dataSettings.compareStocks;
+
+        if (this.dataSource.dataSettings.candleMode) {
+          params.isTheoreticalData = this.dataSource.dataSettings.candleMode.value === "theoretical";
+        }
+
         //var p = $('[name=form_info_settings]').serializeArray();
         //for (var i = 0; i < p.length; i++) {
         //    params[p[i].name] = p[i].value;
@@ -575,14 +580,14 @@
             }
 
             var indForm =
-            '<div style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)" class="js-chart-indiacator-block tm-pad-large js-chartTADialog-i' + id + '-settings" id="iChart-i' + id + '-settings">' +
-                '<div class="uk-panel">' +
+            '<div class="js-chart-indiacator-block js-chartTADialog-i' + id + '-settings" id="iChart-i' + id + '-settings">' +
+                '<div class="uk-panel uk-margin-top">' +
                     '<div class="uk-flex uk-flex-middle uk-flex-space-between uk-margin-small-bottom">' +
                         '<div class="uk-h4">' + _t('12834','Индикатор') + ' ' + (id+1) + '</div>' +
-                        '<div class="js-indicator-remove uk-icon-close uk-panel-hover uk-badge uk-button uk-button-mini"></div>' +
+                        '<div class="js-indicator-remove uk-button uk-button-danger uk-button-small uk-button-fit"><i class="uk-icon-close"></i></div>' +
                     '</div>' +
                     '<div class="uk-form">' +
-                        '<select name="i' + id + '" class="indicatorsSelect">' +
+                        '<select name="i' + id + '" class="indicatorsSelect uk-width-1-1">' +
                         indicatorOptions +
                         '</select>' +
                     '</div>' +
@@ -603,7 +608,7 @@
         for (var j = 0; j < indicatorParameters.length; ++j) {
             var parameterKey = "i" + id + "_" + indicatorParameters[j].Code;
             var $container = $("<div/>", { "class":"iChart-indicator-parameters uk-form", "text":indicatorParameters[j].Name + ": " }).appendTo($root);
-            $("<input/>", { "name":parameterKey, "type":"text", "value":indicatorParameters[j].Value }).css({ "width":"50px" }).appendTo($container);
+            $("<input/>", { "name":parameterKey, "type":"text", "value":indicatorParameters[j].Value, class: "uk-form-small" }).css({ "width":"50px" }).appendTo($container);
         }
 
         var $colorContainer = $("<div/>", {"class":"iChart-indicator-colors", "id":"iChart-indicator-colors"}).appendTo($root);
@@ -812,20 +817,20 @@
 
     this.iconsLoad = function () {
         $(["/i/admin/add.png",
-            "/iguanachart/images/buy.png",
-            "/iguanachart/images/down.png",
-            "/iguanachart/images/icon-exclamation.png",
-            "/iguanachart/images/icon-left.png",
-            "/iguanachart/images/icon-leftDown.png",
-            "/iguanachart/images/icon-leftUp.png",
-            "/iguanachart/images/icon-question.png",
-            "/iguanachart/images/icon-right.png",
-            "/iguanachart/images/icon-rightDown.png",
-            "/iguanachart/images/icon-rightUp.png",
-            "/iguanachart/images/icon-sell.png",
-            "/iguanachart/images/icon-smileDown.png",
-            "/iguanachart/images/icon-smileUp.png",
-            "/iguanachart/images/icon-up.png",
+            this.lib_path + "/images/buy.png",
+            this.lib_path + "/images/down.png",
+            this.lib_path + "/images/icon-exclamation.png",
+            this.lib_path + "/images/icon-left.png",
+            this.lib_path + "/images/icon-leftDown.png",
+            this.lib_path + "/images/icon-leftUp.png",
+            this.lib_path + "/images/icon-question.png",
+            this.lib_path + "/images/icon-right.png",
+            this.lib_path + "/images/icon-rightDown.png",
+            this.lib_path + "/images/icon-rightUp.png",
+            this.lib_path + "/images/icon-sell.png",
+            this.lib_path + "/images/icon-smileDown.png",
+            this.lib_path + "/images/icon-smileUp.png",
+            this.lib_path + "/images/icon-up.png",
             "/i/logo_tradernet_min.png"]).preload();
     };
     this.drawLables = function (legend, context, x, y) {
@@ -1288,6 +1293,24 @@
             this.viewData.chart.render({ "forceRecalc": true, "resetViewport": false, "testForIntervalChange": false });
         }
     };
+
+    this.getPeriodByInterval = function(interval) {
+        switch (interval) {
+            case "I1":
+                return "D1";
+            case "I5":
+                return "D3";
+            case "I15":
+                return "D7";
+            case "H1":
+                return "D14";
+            case "D1":
+                return "M6";
+            case "D7":
+                return "Y1";
+        }
+    }
+
     this.setDatePeriod = function (interval, start, end){
         this.dataSource.dataSettings.interval = interval;
         this.dataSource.dataSettings.period = period;
@@ -1296,31 +1319,20 @@
         this.dataSource.dataSettings.date_to = end;
         this.dataSource.dataSettings.timeframe = iChart.getChartTimeframe(interval);
 
-        var period = "M1";
-        switch (interval) {
-            case"I1":
-                period = "D1";
-                break;
-            case"I5":
-                period = "D3";
-                break;
-            case"I15":
-                period = "D7";
-                break;
-            case"H1":
-                period = "D14";
-                break;
-            case"D1":
-                period = "M6";
-                break;
-            case"D7":
-                period = "Y1";
-                break
-        }
+        var period = interval
+            ? this.getPeriodByInterval(interval)
+            : "M1";
 
         this.checkPeriod(period);
     };
-    this.checkDateInterval = function (new_date_from, new_date_to) {
+
+    this.applyChartOptions = function (params) {
+        this.dataSource.dataSettings.candleMode = params.candleMode || iChart.candleModes.standard;
+
+        this.dataSource.dataSettings.customIntervals = params.customIntervals;
+    }
+
+    this.checkDateInterval = function (new_date_from, new_date_to, forceUpdates = false) {
 
         var date_from = iChart.formatDateTime(new Date(new_date_from), "dd.MM.yyyy HH:mm");
         var date_to = iChart.formatDateTime(new Date(new_date_to), "dd.MM.yyyy HH:mm");
@@ -1340,14 +1352,8 @@
         var interval = (new_date_to - new_date_from) / 86400000;
         var fromNow = (new Date().getTime() - new_date_from) / 86400000;
 
-        var Allow1 = new Array;
-
-        Allow1.push("I1");
-        Allow1.push("I5");
-        Allow1.push("I15");
-        Allow1.push("H1");
-        Allow1.push("D1");
-        Allow1.push("D7"); //TODO: нету данных в mChartAnalysisJSON, нужна доработка сервера
+        // //TODO: D7 нету данных в mChartAnalysisJSON, нужна доработка сервера
+        var Allow1 = ["I1", "I5", "I15", "H1", "D1", "D7"];
 
         var restriction = {};
 
@@ -1362,18 +1368,55 @@
         } else if (fromNow < 3 && fromNow >= 0) { // от дня
         }
 
-        var dataSource = new Array();
+        if (this.dataSource.dataSettings.customIntervals) {
+            Allow1 = this.dataSource.dataSettings.customIntervals;
+            restriction = Allow1.reduce((acc, interval) => {
+                acc[interval] = this.getPeriodByInterval(interval);
 
-        for (var i = 0; i < Allow1.length; i++) {
-            var text = intervalNames(Allow1[i]) + ((typeof restriction[Allow1[i]] != "undefined") ? (" > " + intervalShortNames(restriction[Allow1[i]])) : "");
-            dataSource.push({ text: text, value: Allow1[i], restriction: restriction[Allow1[i]] });
+                return acc;
+            }, {});
         }
 
+        const dataSource = [];
+
+        Allow1.forEach((interval) => {
+            let intervalName = intervalNames(interval);
+            const intervalShortName = intervalShortNames(restriction[interval]);
+
+            if (intervalShortName) {
+                intervalName = `${intervalName} > ${intervalShortName}`;
+            }
+
+            dataSource.push({
+                text: intervalName,
+                value: interval,
+                restriction: restriction[interval],
+            });
+        });
+
+        // set first interval for selection if it's not in set
+        if (!Allow1.includes(interval_tmp)) {
+          interval_tmp = Allow1[0];
+        }
 
         this.dataSource.dataSettings.interval = interval_tmp;
 
-        var result = {restriction: restriction, dataSource: dataSource, value: interval_tmp, text: intervalNames(interval_tmp)};
-        if(JSON.stringify(this.dataSource.dataSettings.intervalRestriction) != JSON.stringify(restriction) && interval_tmp == this.dataSource.dataSettings.interval) {
+        var result = {
+          restriction: restriction,
+          dataSource: dataSource,
+          value: interval_tmp,
+          text: intervalNames(interval_tmp),
+          selectedCandleMode: this.dataSource.dataSettings.candleMode,
+          candleModes: iChart.candleModes,
+        };
+
+        if (
+            forceUpdates ||
+            (
+                JSON.stringify(this.dataSource.dataSettings.intervalRestriction) !== JSON.stringify(restriction)
+                && interval_tmp === this.dataSource.dataSettings.interval
+            )
+        ) {
             this.dataSource.dataSettings.intervalRestriction = restriction;
             $(this.container).trigger('iguanaChartEvents', ['intervalRestriction', result]);
         }
@@ -1608,7 +1651,7 @@
     this.initIndicatorWidthMenu = function (element, menu) {
         $(element).qtip({
             style: {
-                classes: 'qtip-light'
+                classes: 'qtip-light uk-tooltip-custom'
             },
             position: {
                 at: 'left bottom',
@@ -1921,6 +1964,10 @@
         e.stopPropagation();
         e.stopImmediatePropagation();
         return false;
+    });
+
+    $(_this.wrapper).on('iguanaChangeChartType', function(event, name, data) {
+      console.log({ event, name, data });
     });
 
     //$(window).on("hashchange", this.window_onHashChange);

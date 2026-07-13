@@ -37,6 +37,10 @@ var iChartDataSource = {
             'demo': params.demo
         };
 
+        if (params.isTheoreticalData) {
+          cachedParams.isTheoreticalData = params.isTheoreticalData;
+        }
+
         //Спецальная метка для nginx по которой он будет пытаться взять hloc из файла а не с сервера
         cachedParams['hash'] = cachedParams.id.toString()
             + (cachedParams.date_from ? Date.parse(cachedParams.date_from).toString() : '')
@@ -131,8 +135,11 @@ var iChartDataSource = {
                         _chart.viewData.chart._dataSettings.date_from,
                         _chart.viewData.chart._dataSettings.date_to);
 
+                    const parsedDateFrom = iChart.parseDateTime(_chart.viewData.chart._dataSettings.date_from);
+                    const parsedDateTo = iChart.parseDateTime(_chart.viewData.chart._dataSettings.date_to);
+
                     _chart.checkPeriodInterval(_chart.viewData.chart._dataSettings.interval);
-                    _chart.checkDateInterval(_chart.viewData.chart._dataSettings.date_from, _chart.viewData.chart._dataSettings.date_to);
+                    _chart.checkDateInterval(parsedDateFrom, parsedDateTo);
                     _chart.updateUnlocked = true
                     _chart.fixViewport();
                     _chart.wrapper.trigger("iguanaChartEvents", ["noDataInRequestResponse"]);

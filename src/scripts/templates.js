@@ -18,13 +18,13 @@ $.templates("iChart_mainTmpl", '' +
                 '<div class="uk-modal-header">' + _t('3101', "Индикаторы") + '</div>' +
                 '<div class="js-chartTADialogContainer"></div>' +
                 '<div class="uk-modal-footer">' +
-                    '<div class="uk-flex uk-flex-middle uk-flex-space-between tm-pad-large">' +
-                        '<div class="js-indicator-add md-btn md-btn-small md-btn-success">' +
+                    '<div class="uk-flex uk-flex-middle uk-flex-space-between">' +
+                        '<div class="js-indicator-add uk-button uk-button-small uk-button-success">' +
                             _t('15460', 'Добавить индикатор') +
                         '</div>' +
-                    '<div class="md-btn-group"><a class="md-btn md-btn-small md-btn-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
-                        '<a class="md-btn md-btn-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
-                        '<a class="md-btn md-btn-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
+                    '<div class="uk-button-group"><a class="uk-button uk-button-small uk-button-primary indicators-set" href="#">' + _t('532', 'Применить') + '</a>' +
+                        '<a class="uk-button uk-button-small indicators-default" href="#">' + _t('15461', 'Для всех') + '</a>' +
+                        '<a class="uk-button uk-button-small indicators-close" href="#">' + _t('1403', "Отмена") + '</a></div>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
@@ -304,9 +304,12 @@ $.templates("indicatorsDropdownTmpl",
 $.templates("indicatorDialogTmpl", '' +
     '<div class="iChartDialog" style="display: none; width: 300px;">' +
         '<div> {{:name}} </div>' +
-        '<div class="js-iChartTools-indicators-params">' +
+        '<div class="js-iChartTools-indicators-params uk-form">' +
             '{{for parameters}}' +
-                '<div>{{:Name}} <input type="text" name="{{:Code}}" value="{{:Value}}" /></div>' +
+                '<div>' +
+                    '{{:Name}}' +
+                    '<input type="text" name="{{:Code}}" value="{{:Value}}" />' +
+                '</div>' +
             '{{/for}}' +
         '</div>' +
         '<div class="js-iChartTools-indicators-colorContainer"></div>' +
@@ -334,7 +337,7 @@ $.templates("captureDialogTmpl", '' +
 
 $.templates("themeConfigSelectorTmpl", '' +
     '<div class="uk-button-dropdown" data-uk-dropdown="{mode:\'click\'}" aria-haspopup="true" aria-expanded="false">' +
-        '<button class="uk-button uk-button-success">' + _t('13663', 'Темы') + ' <i class="uk-icon-caret-down"></i></button>' +
+        '<button class="uk-button uk-button-small uk-button-success">' + _t('13663', 'Темы') + ' <i class="uk-icon-caret-down uk-margin-small-left"></i></button>' +
         '<div class="uk-dropdown uk-dropdown-up uk-dropdown-small uk-dropdown-scrollable">' +
             '<ul class="uk-nav uk-nav-dropdown">' +
                 '{{for themes}}' +
@@ -355,7 +358,7 @@ $.templates("themeConfigSelectorTmpl", '' +
 $.templates("themeConfigTmpl", '' +
     '<div class="js-themeConfig" style="display: none">' +
         '<div class="js-themeConfigOptions"></div>' +
-        '<div class="uk-grid uk-grid-small">' +
+        '<div class="uk-grid uk-grid-small uk-margin-top">' +
             '<div class="uk-width-1-1">' +
                 '<div class="js-themeConfigSelector"></div>' +
             '</div>' +
@@ -365,8 +368,8 @@ $.templates("themeConfigTmpl", '' +
             '<div class="uk-width-7-10 js-themeAdditionButtons">' +
             '</div>' +
             '<div class="uk-width-3-10 uk-text-right">' +
-                '<button class="uk-button js-chartOptions" data-value="cancel">' + _t('1403', 'Отмена') + '</button> ' +
-                '<button class="uk-button  uk-button-primary js-chartOptions" data-value="ok">' + _t('3920', "OK") + '</button>' +
+                '<button class="uk-button uk-button-fit js-chartOptions" data-value="cancel">' + _t('1403', 'Отмена') + '</button> ' +
+                '<button class="uk-button uk-button-fit uk-button-primary js-chartOptions" data-value="ok">' + _t('3920', "OK") + '</button>' +
             '</div>' +
         '</div>' +
     '</div>'
